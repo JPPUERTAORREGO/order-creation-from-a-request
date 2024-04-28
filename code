@@ -1,0 +1,73 @@
+Sub crear_pedido()
+
+Dim Appl As Object
+Dim Connection As Object
+Dim session As Object
+Dim WshShell As Object
+Dim SapGui As Object
+Dim Información As Object
+LibroUsuario = ActiveWorkbook.Name
+
+Shell "TASKKILL /IM saplogon.exe /F" 'Cierra la App de SAP para hacer un inicio limpio
+Application.Wait Now + TimeValue("0:00:02")
+
+Shell "C:\Program Files (x86)\SAP\FrontEnd\SapGui\saplogon.exe", 4
+Set WshShell = CreateObject("WScript.Shell")
+
+Do Until WshShell.AppActivate("SAP Logon ")
+    Application.Wait Now + TimeValue("0:00:01")
+Loop
+
+Set WshShell = Nothing
+
+Set SapGui = GetObject("SAPGUI")
+Set Appl = SapGui.GetScriptingEngine
+Set Connection = Appl.openconnection("1. Grupo Nutresa_ERP_PRD", True)
+Set session = Connection.Children(0)
+
+
+
+If session.Children.Count > 1 Then ' cuando se ingresa con sesión iniciada y con otras pantallas
+
+   ' answer = MsgBox("You've got opened SAP already," & _
+'"please leave and try again", vbOKOnly, "Opened SAP")
+
+    session.findById("wnd[1]/usr/radMULTI_LOGON_OPT1").Select
+    session.findById("wnd[1]/usr/radMULTI_LOGON_OPT1").SetFocus
+    session.findById("wnd[1]/tbar[0]/btn[0]").press
+    session.findById("wnd[0]").sendVKey 0
+    
+End If
+
+
+
+For i = 1 To 100
+
+session.findById("wnd[0]").maximize
+session.findById("wnd[0]/tbar[0]/okcd").Text = "/nme21n"
+session.findById("wnd[0]").sendVKey 0
+session.findById("wnd[0]/tbar[1]/btn[8]").press
+session.findById("wnd[0]/shellcont/shell/shellcont[1]/shell[1]").expandNode "          1"
+session.findById("wnd[0]/shellcont/shell/shellcont[1]/shell[1]").topNode = "          1"
+session.findById("wnd[0]/shellcont/shell/shellcont[1]/shell[1]").expandNode "          2"
+session.findById("wnd[0]/shellcont/shell/shellcont[1]/shell[1]").topNode = "          1"
+session.findById("wnd[0]/shellcont/shell/shellcont[1]/shell[1]").selectItem "          2", "&Hierarchy"
+session.findById("wnd[0]/shellcont/shell/shellcont[1]/shell[1]").ensureVisibleHorizontalItem "          2", "&Hierarchy"
+session.findById("wnd[0]/shellcont/shell/shellcont[1]/shell[1]").doubleClickItem "          2", "&Hierarchy"
+session.findById("wnd[0]/tbar[1]/btn[17]").press
+session.findById("wnd[1]/usr/subSUB0:SAPLMEGUI:0003/radMEPO_SELECT-BSTYP_F").SetFocus
+session.findById("wnd[1]/usr/subSUB0:SAPLMEGUI:0003/radMEPO_SELECT-BSTYP_F").Select
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+session.findById("wnd[0]/tbar[1]/btn[6]").press
+session.findById("wnd[0]/usr/subSUB0:SAPLMEGUI:0013/subSUB0:SAPLMEGUI:0030/subSUB1:SAPLMEGUI:1105/cmbMEPO_TOPLINE-BSART").Key = "ZSER"
+'session.findById("wnd[0]/usr/subSUB0:SAPLMEGUI:0016/subSUB0:SAPLMEGUI:0030/subSUB1:SAPLMEGUI:1105/cmbMEPO_TOPLINE-BSART").Key = "ZSER"
+session.findById("wnd[0]/shellcont/shell/shellcont[1]/shell[0]").pressButton "COPY"
+session.findById("wnd[0]/tbar[0]/btn[11]").press
+session.findById("wnd[0]/shellcont/shell/shellcont[1]/shell[0]").pressButton "REFRESH"
+
+Next i
+
+
+End Sub
+
+
